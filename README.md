@@ -13,6 +13,7 @@ Remember: Gundwane is an agentic deFi assistant, he can do everything, but he wi
 
 - [Architecture](#architecture)
 - [Components](#components)
+  - [landing page/](#landing-page)
   - [contracts/](#contracts)
   - [mini-app/](#mini-app)
   - [defi-agent-plugin/](#defi-agent-plugin)
@@ -58,6 +59,22 @@ Remember: Gundwane is an agentic deFi assistant, he can do everything, but he wi
 ---
 
 ## Components
+
+### `landing page/`
+
+**Next.js 15 + React 19 + Tailwind** — Marketing landing page.
+
+- Modern, responsive design with dark mode support
+- Home page with hero, features, pricing, and CTAs
+- Dedicated about page explaining the technology and mission
+- Points users to [@gundwane_bot](https://t.me/gundwane_bot)
+- Ready for deployment to Vercel, Netlify, or any static host
+
+```bash
+cd "landing page"
+npm install
+npm run dev  # Visit http://localhost:3001
+```
 
 ### `contracts/`
 
