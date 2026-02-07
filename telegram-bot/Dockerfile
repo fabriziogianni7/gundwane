@@ -6,12 +6,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g openclaw@latest
+RUN npm install -g openclaw@latest pnpm
 
-# Pre-built plugin only (build on host: cd defi-agent-plugin && pnpm install && pnpm run build)
-COPY defi-agent-plugin/package.json defi-agent-plugin/openclaw.plugin.json /tmp/defi-agent-plugin/
-COPY defi-agent-plugin/dist/ /tmp/defi-agent-plugin/dist/
-COPY defi-agent-plugin/skills/ /tmp/defi-agent-plugin/skills/
+# Build the plugin inside the image (no pre-built dist/ needed)
+COPY defi-agent-plugin/ /tmp/defi-agent-plugin/
+RUN cd /tmp/defi-agent-plugin && pnpm install --frozen-lockfile && pnpm run build
 RUN openclaw plugins install /tmp/defi-agent-plugin
 
 ENV OPENCLAW_STATE_DIR=/root/.openclaw
