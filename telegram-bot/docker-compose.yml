@@ -1,0 +1,15 @@
+# Build (plugin built on host, then image): ./telegram-bot/build.sh   or from repo root: telegram-bot/build.sh
+# Up: docker compose -f telegram-bot/docker-compose.yml up -d
+# From repo root, create telegram-bot/.env and set DEFI_AGENT_BACKEND_URL (e.g. http://host.docker.internal:3000 or your Mini App URL).
+services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: telegram-bot/Dockerfile
+    env_file: .env
+    volumes:
+      - wallet-data:/root/.moltbot
+    restart: unless-stopped
+
+volumes:
+  wallet-data:

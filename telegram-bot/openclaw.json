@@ -1,0 +1,88 @@
+{
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "token": "defi-bot-internal-token"
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "openai/gpt-5-mini"
+      },
+      "heartbeat": {
+        "every": "30m",
+        "target": "last",
+        "activeHours": { "start": "07:00", "end": "23:00" },
+        "prompt": "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.",
+        "ackMaxChars": 400
+      },
+      "compaction": {
+        "memoryFlush": {
+          "enabled": true,
+          "softThresholdTokens": 80000,
+          "prompt": "Write any durable memories, user preferences, behavioral patterns, and portfolio observations to per-user memory files before context compaction."
+        }
+      },
+      "subagents": {
+        "model": "openai/gpt-5-mini",
+        "maxConcurrent": 2
+      }
+    }
+  },
+  "cron": {
+    "enabled": true
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "open",
+      "allowFrom": [
+        "*"
+      ],
+      "capabilities": {
+        "inlineButtons": "all"
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "defi-agent-plugin": {
+        "enabled": true,
+        "config": {
+          "backendUrl": "",
+          "delegateContractAddress": "",
+          "chains": {
+            "1": {
+              "rpcUrl": "${ETH_MAINNET_RPC_URL}",
+              "blockExplorerUrl": "https://etherscan.io"
+            },
+            "11155111": {
+              "rpcUrl": "${SEPOLIA_RPC_URL}",
+              "blockExplorerUrl": "https://sepolia.etherscan.io"
+            },
+            "8453": {
+              "rpcUrl": "${BASE_RPC_URL}",
+              "blockExplorerUrl": "https://basescan.org"
+            },
+            "42161": {
+              "rpcUrl": "${ARBITRUM_RPC_URL}",
+              "blockExplorerUrl": "https://arbiscan.io"
+            },
+            "137": {
+              "rpcUrl": "${POLYGON_RPC_URL}",
+              "blockExplorerUrl": "https://polygonscan.com"
+            },
+            "10": {
+              "rpcUrl": "${OPTIMISM_RPC_URL}",
+              "blockExplorerUrl": "https://optimistic.etherscan.io"
+            }
+          }
+        }
+      }
+    }
+  }
+}

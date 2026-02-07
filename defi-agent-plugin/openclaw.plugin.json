@@ -1,0 +1,24 @@
+{
+  "id": "defi-agent-plugin",
+  "name": "DeFi Agent (EIP-7702)",
+  "description": "Non-custodial DeFi agent: resolve wallet via backend, execute via delegate contract.",
+  "skills": ["skills/defi-agent"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "backendUrl": { "type": "string", "description": "Base URL of the Mini App backend (e.g. https://your-app.vercel.app)" },
+      "delegateContractAddress": { "type": "string" },
+      "chains": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "rpcUrl": { "type": "string" },
+            "blockExplorerUrl": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

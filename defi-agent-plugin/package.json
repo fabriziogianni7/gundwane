@@ -1,0 +1,34 @@
+{
+  "name": "defi-agent-plugin",
+  "version": "0.1.1",
+  "description": "OpenClaw plugin for EIP-7702 non-custodial DeFi agent (operator pattern)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "openclaw": {
+    "extensions": ["./dist/plugin.js"]
+  },
+  "files": ["dist/**", "README.md"],
+  "scripts": {
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.48",
+    "openclaw": "^2026.2.1",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
