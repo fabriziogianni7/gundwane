@@ -40,10 +40,10 @@ export async function GET(
     });
 
     const user = await privy.users().getByTelegramUserID({ telegram_user_id: telegramUserId });
-    const wallet = pickEthereumWallet(user.linked_accounts as LinkedAccount[]);
+    const wallet = pickEthereumWallet(user.linked_accounts as unknown as LinkedAccount[]);
     if (!wallet) {
       if (process.env.NODE_ENV !== "production") {
-        console.warn("[api/wallet] No ethereum wallet for user", user.id, "linked_accounts:", (user.linked_accounts as LinkedAccount[]).map((a) => ({ type: a.type, chain_type: a.chain_type })));
+        console.warn("[api/wallet] No ethereum wallet for user", user.id, "linked_accounts:", (user.linked_accounts as unknown as LinkedAccount[]).map((a) => ({ type: a.type, chain_type: a.chain_type })));
       }
       return NextResponse.json({ address: null, isDelegated: false }, { status: 200 });
     }
