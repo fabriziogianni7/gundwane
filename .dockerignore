@@ -1,0 +1,26 @@
+# Dependencies (will be installed inside the build stage)
+**/node_modules
+
+# Git
+**/.git
+.gitmodules
+
+# Build artifacts (will be generated inside the build stage)
+**/dist
+mini-app/.next
+
+# Contracts (not needed for the bot image)
+contracts/
+
+# Mini app source (not needed for the bot image)
+mini-app/
+
+# Env files (secrets injected at runtime, not baked into the image)
+**/.env
+**/.env.*
+!**/.env.example
+
+# OS / editor
+**/.DS_Store
+**/.vscode
+**/.idea
