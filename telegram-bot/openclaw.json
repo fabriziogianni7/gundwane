@@ -79,6 +79,10 @@
             "10": {
               "rpcUrl": "${OPTIMISM_RPC_URL}",
               "blockExplorerUrl": "https://optimistic.etherscan.io"
+            },
+            "9270000000000000": {
+              "rpcUrl": "${SUI_RPC_URL}",
+              "blockExplorerUrl": "https://suiscan.xyz"
             }
           }
         }

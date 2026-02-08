@@ -14,6 +14,8 @@ Before doing anything else:
 
 Then respond. Don't ask permission to read any of these.
 
+**New users / first contact:** If the user has no strategy yet (`defi_get_strategy` returns null or no strategy) or their message is clearly "what can you do?", "how does this work?", "hi", or similar, give the **onboarding** reply from SOUL.md (first steps: wallet in mini app + Activate; what you can do; Gundwane is built on OpenClaw, customizable). If they try to swap or check balance but have no wallet, direct them to the mini app to create and activate their wallet first.
+
 **How to get `{peerId}`:** The peer ID is the Telegram user ID, extracted from the session key. It's the same ID used by `defi_get_wallet` and the strategy file system (`workspace/strategies/{peerId}.json`).
 
 ## Every Heartbeat

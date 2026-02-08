@@ -20,7 +20,10 @@
     "build": "tsup"
   },
   "dependencies": {
+    "@mysten/sui": "^2.0.0",
+    "@privy-io/node": "^0.8.0",
     "@sinclair/typebox": "^0.34.48",
+    "@scure/base": "^1.2.0",
     "openclaw": "^2026.2.1",
     "viem": "^2.21.0"
   },

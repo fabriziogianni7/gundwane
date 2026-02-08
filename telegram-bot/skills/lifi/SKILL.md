@@ -30,8 +30,16 @@ metadata:
 ## Transaction Links
 
 After every transaction broadcast, **always** provide a clickable block explorer link:
-- Format: `[View tx](https://basescan.org/tx/0xHASH)`
-- Use the correct explorer for the chain (etherscan.io, basescan.org, arbiscan.io, polygonscan.com, optimistic.etherscan.io)
+- EVM: `[View tx](https://basescan.org/tx/0xHASH)` — use the correct explorer (etherscan.io, basescan.org, arbiscan.io, polygonscan.com, optimistic.etherscan.io)
+- Sui: `[View tx](https://suiscan.xyz/txblock/{txDigest})`
+
+## Sui
+
+- **Sui chain ID: `9270000000000000`**. Use this for `fromChain` and `toChain` in LI.FI quote requests when the user wants Sui (e.g. `fromChain=9270000000000000&toChain=9270000000000000` for same-chain Sui swap).
+- LI.FI supports **Sui** for same-chain swaps and bridging to/from EVM and Solana.
+- For Sui quotes, use the user's **suiAddress** from `defi_get_wallet` as `fromAddress`.
+- **Execute Sui quotes with `defi_send_sui_transaction`** — pass the transaction bytes (hex) from the LI.FI quote. Do **not** use `defi_send_transaction` or `defi_approve_and_send` for Sui.
+- Sui does not use ERC-20 approvals; there is no approval step for Sui swaps.
 
 ## Endpoints
 
@@ -82,6 +90,8 @@ After presenting a quote to the user, always include the estimated output amount
 - **If approval is NOT needed** (native ETH swap, value > 0x0): Use `defi_send_transaction` with the quote's `transactionRequest` fields: **to, value, data, chainId, and gasLimit** (ALWAYS pass `gasLimit` from the quote).
 
 **NEVER construct approve calldata hex yourself.** The `defi_approve` and `defi_approve_and_send` tools handle ABI encoding correctly.
+
+**Sui:** For quotes where `fromChain` or `toChain` is Sui, use `defi_send_sui_transaction` with the quote's transaction bytes. No approval step.
 
 ### POST /v1/advanced/routes — Get multiple route options
 
