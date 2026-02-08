@@ -72,19 +72,19 @@ export type Step = { title: string; description: string };
 
 export const STEPS: Step[] = [
   {
-    title: "Open the Mini App",
+    title: "Create your wallet in the app",
     description:
-      "Start a conversation with @gundwane_bot and tap the mini app button. Log in with your Telegram account and create your embedded wallet via Privy.",
+      "Open a chat with @gundwane_bot and tap the mini app. Sign in with Telegram — we create an embedded wallet for you in the app (no seed phrase, no extra install). Then tap “Activate” to connect your wallet to the agent on all supported chains.",
   },
   {
-    title: "Activate Delegation",
+    title: "The agent can do the rest",
     description:
-      "Sign a one-time EIP-7702 authorization. This lets Gundwane execute transactions on your behalf — without ever holding your funds. You can revoke it anytime.",
+      "Swap and bridge across chains, check your portfolio, set price alerts, and automate DCA — all through simple chat. Example: “Swap 0.1 ETH to USDC”, “What’s my balance?”, “Set weekly DCA 50 USDC into ETH”. Your keys stay with you; you can revoke the agent anytime.",
   },
   {
-    title: "Start Trading",
+    title: "Customize your agent",
     description:
-      'Chat naturally: "Swap 0.1 ETH to USDC", "What\'s my balance?", "Set up weekly DCA for 50 USDC into ETH". Gundwane handles the rest.',
+      "Gundwane is built on OpenClaw. You can customize your agent’s behavior, skills, and preferences however you want — it’s your assistant, your way.",
   },
 ];
 

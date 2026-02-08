@@ -52,10 +52,9 @@ export default function Home() {
             </h1>
 
             <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 mb-12 max-w-3xl mx-auto">
-              Swap, bridge, manage portfolios, set alerts, and automate DCA —
-              all through simple conversations.{" "}
+              Create your wallet in the app, then chat to swap, bridge, manage portfolios, set alerts, and automate DCA.{" "}
               <span className="font-semibold text-purple-600 dark:text-purple-400">
-              Powered by OpenClaw & LI.FI
+              Built on OpenClaw & LI.FI — customize your agent however you want.
               </span>
             </p>
 
@@ -139,7 +138,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <SectionHeader
             title="How It Works"
-            subtitle="Get started in 3 simple steps"
+            subtitle="First steps: create your wallet in the app, then chat. Gundwane is built on OpenClaw — you can customize your agent however you want."
           />
 
           <div className="space-y-8">
