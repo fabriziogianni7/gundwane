@@ -19,6 +19,8 @@ Remember: Gundwane is an agentic deFi assistant, he can do everything, but he wi
   - [defi-agent-plugin/](#defi-agent-plugin)
   - [telegram-bot/](#telegram-bot)
 - [LI.FI Integration](#lifi-integration)
+- [Sui Integration](#sui-integration)
+- [ENS Integration](#ens-integration)
 - [How It Works](#how-it-works)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
@@ -53,6 +55,11 @@ Remember: Gundwane is an agentic deFi assistant, he can do everything, but he wi
                           │  EVM Chains       │
                           │  (Base, Ethereum, │
                           │   Arbitrum, etc.) │
+                          └──────────────────┘
+                          ┌──────────────────┐
+                          │  Sui (Move VM)    │
+                          │  via @mysten/sui  │
+                          │  + Privy rawSign  │
                           └──────────────────┘
 ```
 
@@ -132,6 +139,9 @@ Registered tools:
 ## LI.FI Integration
 
 [LI.FI](https://li.fi) is the **sole routing and execution layer** for all swaps, bridges, and DeFi token operations. No manual DEX interactions — everything goes through LI.FI's aggregator, which finds the best route across 30+ DEXs and bridges.
+
+### 🚨🚨🚨 Openclaw Skill published on Clawhub! 🚨🚨🚨
+Check Skill and use it in your openclaw project: [LI.FI Skill](https://clawhub.ai/fabriziogianni7/lifi-skill)
 
 ### Why LI.FI
 
@@ -251,6 +261,212 @@ This means:
 3. **Sticky product** — once a user sets up DCA plans, price alerts, and a portfolio strategy, switching costs are high
 4. **Telegram distribution** — zero-install onboarding, viral sharing within group chats, bot discovery through Telegram's ecosystem
 5. **LI.FI handles the hard parts** — DEX aggregation, bridge routing, chain support — we focus purely on the agent experience
+
+---
+
+## Sui Integration
+
+Sui is supported as a **first-class non-EVM chain**, giving users access to the Sui DeFi ecosystem directly from the same Telegram bot. The integration uses the **`@mysten/sui` SDK v2** and **Privy embedded Sui wallets** — no seed phrases, no browser extensions.
+
+### Why Sui
+
+- **Move-based VM** — a fundamentally different execution model from the EVM, expanding the DeFi universe the agent can access
+- **Native object model** — no ERC-20 approvals needed; tokens are owned objects, so swaps are simpler and cheaper
+- **High throughput, low fees** — ideal for DCA plans and frequent rebalancing
+
+### How the agent uses Sui
+
+```
+User: "swap 10 SUI for USDC on Sui"
+          │
+          ▼
+   ┌─────────────────┐
+   │  defi_get_wallet │  ← resolve user's Sui address + wallet ID
+   └────────┬────────┘
+            ▼
+   ┌─────────────────┐
+   │  LI.FI /v1/quote │  ← get best route on Sui DEXs
+   │  chainId:         │     (Cetus, Turbos, etc. via LI.FI)
+   │  9270000000000000 │
+   └────────┬────────┘
+            ▼
+   ┌─────────────────┐
+   │  Present quote   │  ← show amount, fees, slippage
+   │  to user         │     + Approve/Reject buttons
+   └────────┬────────┘
+            ▼ (user approves)
+   ┌───────────────────────────┐
+   │  defi_send_sui_transaction │  ← sign & execute on Sui
+   └────────┬──────────────────┘     (no approval step needed)
+            ▼
+   ┌─────────────────┐
+   │  LI.FI /v1/status│  ← track tx confirmation
+   └─────────────────┘
+```
+
+### Sui wallet lifecycle
+
+1. **User opens the Mini App** — Privy creates an embedded Sui wallet (`chainType: "sui"`) alongside the EVM wallet
+2. **Wallet is linked** — the API exposes `suiAddress`, `suiWalletId`, and `suiWalletPublicKey` for the bot
+3. **Bot signs transactions** — using Privy's `rawSign` with the wallet ID, then serializing with ED25519 + Blake2b256
+
+### Sui transaction signing
+
+Unlike EVM chains (which use `secp256k1` + `keccak256`), Sui uses a different cryptographic stack:
+
+```
+Transaction bytes (from LI.FI or @mysten/sui SDK)
+        │
+        ▼
+messageWithIntent("TransactionData", rawBytes)   ← prepend Sui intent prefix
+        │
+        ▼
+Blake2b256 hash                                   ← hash the intent message
+        │
+        ▼
+Privy rawSign(walletId, hash)                     ← ED25519 signature
+        │
+        ▼
+toSerializedSignature({ signature, publicKey,
+                        signatureScheme: "ED25519" })
+        │
+        ▼
+suiClient.executeTransactionBlock({ transactionBlock, signature })
+        │
+        ▼
+txDigest → https://suiscan.xyz/txblock/{txDigest}
+```
+
+### Sui-specific tools
+
+| Tool | Description |
+|------|-------------|
+| `defi_get_sui_balance` | Native SUI balance + all token balances for the user's Sui address |
+| `defi_send_sui_transaction` | Sign and execute a Sui transaction (accepts hex-encoded tx bytes) |
+| `defi_get_portfolio` | Includes Sui assets alongside EVM balances in the multi-chain portfolio |
+| `defi_get_wallet` | Returns both EVM and Sui addresses (`suiAddress`, `suiWalletId`, `suiWalletPublicKey`) |
+
+### Key differences from EVM chains
+
+| | EVM Chains | Sui |
+|--|-----------|-----|
+| **Token approvals** | Required before swaps (ERC-20 `approve`) | Not needed — tokens are owned objects |
+| **Delegation** | EIP-7702 delegate contract | Privy embedded wallet + rawSign |
+| **Signing** | secp256k1 + keccak256 | ED25519 + Blake2b256 |
+| **Chain ID** | Standard (e.g. `1`, `8453`) | `9270000000000000` |
+| **Explorer** | Etherscan, Basescan, etc. | [Suiscan](https://suiscan.xyz) |
+| **Execution tool** | `defi_send_transaction` / `defi_approve_and_send` | `defi_send_sui_transaction` |
+
+### Cross-chain with Sui
+
+LI.FI supports bridging between Sui and EVM chains (and Solana). The agent can handle requests like:
+
+- "Bridge 100 USDC from Base to Sui"
+- "Swap SUI for ETH on Ethereum"
+- "Move my USDC from Sui to Arbitrum"
+
+All cross-chain routes go through LI.FI's aggregator, which picks the best bridge automatically.
+
+### Where Sui appears in the codebase
+
+- **`defi-agent-plugin/src/plugin.ts`** — Sui client setup, `defi_get_sui_balance`, `defi_send_sui_transaction`, Sui portfolio section
+- **`mini-app/src/app/page.tsx`** — Sui wallet creation via Privy (`createExtendedWallet({ chainType: "sui" })`)
+- **`mini-app/src/lib/chains.ts`** — `SUI_CHAIN_ID` constant, chain type detection (`"evm" | "sui"`)
+- **`mini-app/src/app/api/wallet/[telegramUserId]/route.ts`** — `pickSuiWallet()` helper, returns Sui address + wallet ID + public key
+- **`telegram-bot/skills/lifi/SKILL.md`** — Sui-specific LI.FI usage rules (chain ID, no approvals, `defi_send_sui_transaction`)
+- **`telegram-bot/openclaw.json`** — Sui RPC endpoint configuration
+
+### Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SUI_RPC_URL` | `https://fullnode.mainnet.sui.io:443` | Sui JSON-RPC endpoint |
+| `SUI_NETWORK` | `mainnet` | Sui network (`mainnet`, `testnet`, `devnet`) |
+| `PRIVY_APP_ID` | — | Required for Sui wallet rawSign |
+| `PRIVY_APP_SECRET` | — | Required for Sui wallet rawSign |
+| `PRIVY_AUTHORIZATION_KEY` | — | Required for Sui wallet rawSign |
+
+---
+
+## ENS Integration
+
+[ENS](https://ens.domains) (Ethereum Name Service) gives the bot **human-readable name support** — users can send to `vitalik.eth` instead of pasting a 42-character hex address, and the bot can display ENS names alongside raw addresses throughout the experience.
+
+### 🚨🚨🚨 Openclaw Skill published on Clawhub! 🚨🚨🚨
+Check Skill and use it in your openclaw project: [ENS Skill](https://clawhub.ai/fabriziogianni7/ens-skill)
+
+### What the agent can do with ENS
+
+| Capability | Example |
+|------------|---------|
+| **Forward resolution** | "send 0.1 ETH to vitalik.eth" → resolves to `0xd8dA...6045` |
+| **Reverse resolution** | Show `fabri.eth` instead of `0xabc...def` in portfolio views |
+| **Profile lookup** | "look up nick.eth" → avatar, bio, Twitter, GitHub, etc. |
+| **Registration** | "register myname.eth" → availability check, pricing, 2-step commit/reveal flow |
+| **Renewal** | "renew myname.eth" → single transaction on mainnet |
+| **Expiry monitoring** | Heartbeat alerts when a user's .eth name is approaching expiry |
+
+### How the agent uses ENS
+
+```
+User: "send 0.1 ETH to vitalik.eth"
+          │
+          ▼
+   ┌──────────────────┐
+   │  ENS Resolution   │  ← resolve vitalik.eth → 0xd8dA...6045
+   │  (subgraph / API) │     via ENS Subgraph, web3.bio, or viem
+   └────────┬─────────┘
+            ▼
+   ┌──────────────────┐
+   │  Confirm address  │  ← "vitalik.eth → 0xd8dA...6045
+   │  with user        │     Send 0.1 ETH to this address?"
+   └────────┬─────────┘
+            ▼ (user approves)
+   ┌──────────────────┐
+   │  LI.FI + execute  │  ← standard swap/send flow using
+   └──────────────────┘     the resolved 0x address
+```
+
+### Resolution approaches
+
+The agent tries multiple resolution methods in priority order:
+
+1. **ENS Subgraph** (The Graph) — best for detailed data (expiry, registrant, resolver). Requires a `GRAPH_API_KEY`.
+2. **web3.bio API** — free, no key needed. Returns address + profile in one call.
+3. **viem** (fallback) — uses the project's existing `viem` dependency for direct on-chain resolution via Ethereum RPC.
+
+### .eth registration
+
+Registration happens on **Ethereum mainnet** only and uses a 2-step commit/reveal process to prevent front-running:
+
+1. **Commit** — submit a hashed commitment on-chain
+2. **Wait ~60 seconds** — prevents front-running
+3. **Register** — complete registration with payment
+
+Pricing: $5/year for 5+ char names, $160/year for 4-char, $640/year for 3-char. The agent can also direct users to the [ENS Manager App](https://ens.app/) for a full GUI experience.
+
+### Key contracts (Mainnet)
+
+| Contract | Address |
+|----------|---------|
+| ENS Registry | `0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e` |
+| ETH Registrar Controller | `0x253553366Da8546fC250F225fe3d25d0C782303b` |
+| Public Resolver | `0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63` |
+| Universal Resolver | `0xce01f8eee7E479C928F8919abD53E553a36CeF67` |
+| Reverse Registrar | `0xa58E81fe9b61B5c3fE2AFD33CF304c454AbFc7Cb` |
+| Name Wrapper | `0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401` |
+
+### Where ENS appears in the codebase
+
+- **`telegram-bot/skills/ens/SKILL.md`** — full ENS skill: resolution rules, API endpoints, registration/renewal flows, display rules, and expiry monitoring
+- **`defi-agent-plugin/src/plugin.ts`** — `defi_send_transaction` and `defi_execute` handle ENS contract interactions (registration, renewal, setting records)
+- **`telegram-bot/workspace/HEARTBEAT.md`** — heartbeat checks ENS name expiry dates from user strategies
+
+### Configuration
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GRAPH_API_KEY` | Optional | [The Graph](https://thegraph.com/) API key for ENS Subgraph queries. If not set, falls back to web3.bio API. |
 
 ---
 
@@ -401,14 +617,15 @@ openclaw gateway
 
 ## Supported Chains
 
-| Chain | ID | Status |
-|-------|----|--------|
-| Ethereum | 1 | Mainnet |
-| Base | 8453 | Mainnet |
-| Arbitrum | 42161 | Mainnet |
-| Optimism | 10 | Mainnet |
-| Polygon | 137 | Mainnet |
-| Sepolia | 11155111 | Testnet |
+| Chain | ID | Type | Status |
+|-------|----|------|--------|
+| Ethereum | 1 | EVM | Mainnet |
+| Base | 8453 | EVM | Mainnet |
+| Arbitrum | 42161 | EVM | Mainnet |
+| Optimism | 10 | EVM | Mainnet |
+| Polygon | 137 | EVM | Mainnet |
+| **Sui** | **9270000000000000** | **Move** | **Mainnet** |
+| Sepolia | 11155111 | EVM | Testnet |
 
 ---
 
@@ -416,7 +633,7 @@ openclaw gateway
 
 - **Smart Contracts**: Solidity 0.8.24, Foundry, EIP-7702, ERC-7201
 - **Mini App**: Next.js 16, React 19, Tailwind CSS 4, Privy, viem
-- **Plugin**: TypeScript, tsup, viem, OpenClaw Plugin SDK
+- **Plugin**: TypeScript, tsup, viem, @mysten/sui v2, OpenClaw Plugin SDK
 - **Bot**: OpenClaw, GPT-5-mini, LI.FI SDK
 - **Infra**: Docker, Docker Compose
 
