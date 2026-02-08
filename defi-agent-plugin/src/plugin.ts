@@ -331,6 +331,7 @@ const plugin = {
       const c = chains[String(chainId)] ?? Object.values(chains)[0];
       const rpcUrl = c?.rpcUrl ?? `https://rpc.ankr.com/eth`;
       return createPublicClient({
+        chain: getChain(chainId),
         transport: http(rpcUrl),
       });
     }
