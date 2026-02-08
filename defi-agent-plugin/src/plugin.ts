@@ -339,7 +339,21 @@ const plugin = {
     function getChain(chainId: number) {
       const c = chains[String(chainId)] ?? Object.values(chains)[0];
       const rpcUrl = (c as { rpcUrl?: string })?.rpcUrl ?? "https://rpc.ankr.com/eth";
-      return defineChain({ id: chainId, name: "custom", nativeCurrency: { decimals: 18, name: "Ether", symbol: "ETH" }, rpcUrls: { default: { http: [rpcUrl] } } });
+      return defineChain({
+        id: chainId,
+        name: CHAIN_NAMES[String(chainId)] || "custom",
+        nativeCurrency: {
+          decimals: 18,
+          name: "Ether",
+          symbol: CHAIN_NATIVE_SYMBOLS[String(chainId)] || "ETH",
+        },
+        rpcUrls: { default: { http: [rpcUrl] } },
+        contracts: {
+          multicall3: {
+            address: "0xcA11bde05977b3631167028862bE2a173976CA11" as Address,
+          },
+        },
+      });
     }
 
     function getWalletClient(chainId: number) {
