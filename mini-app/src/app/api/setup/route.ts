@@ -52,8 +52,8 @@ export async function POST(req: Request) {
     const results = await Promise.allSettled(
       authorizations.map(async (auth: { chainId: number; contractAddress: string; nonce: number; r: string; s: string; yParity: number }) => {
         const chainId = Number(auth.chainId);
-        const conf = CHAIN_MAP[chainId];
-        if (!conf) {
+        const conf = CHAIN_MAP[String(chainId)];
+        if (!conf || conf.type !== "evm" || !conf.rpcEnvKey) {
           return { chainId, status: "error" as const, error: "Unknown chain" };
         }
         const rpcUrl = process.env[conf.rpcEnvKey];
@@ -83,6 +83,7 @@ export async function POST(req: Request) {
         try {
           const hash = await walletClient.sendTransaction({
             type: "eip7702",
+            chain: conf.chain,
             chainId,
             to: walletAddress,
             data: initializeOperatorData,

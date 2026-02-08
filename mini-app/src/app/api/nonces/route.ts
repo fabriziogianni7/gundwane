@@ -23,8 +23,8 @@ export async function GET(req: Request) {
 
     const results = await Promise.all(
       supportedChainIds.map(async (chainId) => {
-        const conf = CHAIN_MAP[chainId];
-        if (!conf) return { chainId, nonce: 0 };
+        const conf = CHAIN_MAP[String(chainId)];
+        if (!conf || conf.type !== "evm" || !conf.rpcEnvKey) return { chainId, nonce: 0 };
         const rpcUrl = process.env[conf.rpcEnvKey];
         if (!rpcUrl) return { chainId, nonce: 0 };
         const client = createPublicClient({
