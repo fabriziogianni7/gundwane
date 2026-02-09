@@ -5,6 +5,7 @@ pragma solidity ^0.8.24;
  * EIP-7702 delegate contract for non-custodial DeFi agent.
  * When delegated to an EOA, allows an operator (bot) to execute calls on behalf of the account.
  * Uses ERC-7201 namespaced storage to avoid collisions across delegations.
+ * IMPORTANT - THIS CONTRACT IS NOT SECURE YET - IT's BASED on GUNDWANE TRUST ASSUMPTION
  */
 contract DeFiAgentDelegate {
     /// @custom:storage-location erc7201:defi.agent.delegate.v1
